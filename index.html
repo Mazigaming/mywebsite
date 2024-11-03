@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://media1.tenor.com/m/Ksk-Him7qP8AAAAd/high-quality-horizonrally-spinning-rat.gif'); /* Set the GIF as background */
+            background-position: center;
+            background-size: cover; 
+            background-repeat: no-repeat; 
+            color: rgb(166, 117, 2);
+            font-family: 'Press Start 2P', cursive;
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            overflow: hidden; 
+            font-size: 12px;
+            position: relative; 
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        nav a {
+            color: #cb5d96;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+
+        .window {
+            border: 2px solid rgb(248, 96, 197);
+            background-color: rgba(77, 56, 6, 0.8); 
+            box-shadow: 0 0 10px rgba(248, 96, 197, 0.5);
+            position: absolute;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-width: 220px;
+            max-width: 400px; 
+            min-height: 100px; 
+            cursor: move;
+            z-index: 10;
+            font-size: 10px;
+        }
+
+        .title-container {
+            background-color: rgb(109, 51, 103);
+            color: rgb(248, 96, 197);
+            padding: 5px;
+            border-bottom: 2px solid rgb(248, 96, 197);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content-container {
+            padding: 10px;
+            flex-grow: 1;
+        }
+
+        .button {
+            background-color: transparent;
+            border: none;
+            color: rgb(248, 96, 197);
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+
+        .boot-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            color: rgb(255, 119, 255);
+            font-size: 10px; 
+            line-height: 1.4;
+            white-space: pre-wrap;
+            padding: 10px;
+            font-family: 'Press Start 2P', cursive;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+        }
+
+        .line {
+            opacity: 0;
+            animation: type 1s steps(20, end) forwards;
+        }
+
+        @keyframes type {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Line delays */
+        #line1 { animation-delay: 1s; }
+        #line2 { animation-delay: 2s; }
+        #line3 { animation-delay: 3s; }
+        #line4 { animation-delay: 4s; }
+        #line5 { animation-delay: 5s; }
+        #line6 { animation-delay: 6s; }
+
+        .boot-overlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+     
+        .music-player {
+            position: absolute;
+            bottom: 40px; 
+            left: 20px; 
+            right: 20px; 
+            background-color: rgba(77, 56, 6, 0.8); 
+            color: rgb(248, 96, 197);
+            padding: 10px;
+            border-top: 2px solid rgb(248, 96, 197);
+            display: flex;
+            align-items: center;
+            box-shadow: 0 -2px 10px rgba(248, 96, 197, 0.5);
+        }
+
+        .music-controls {
+            display: flex;
+            align-items: center;
+            margin-right: 10px;
+        }
+
+        .progress {
+            flex-grow: 1;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="boot-overlay" id="bootOverlay">
+        <div id="line1" class="line">Initializing The Site</div>
+        <div id="line2" class="line">Loading System Components</div>
+        <div id="line3" class="line">Reading RAM</div>
+        <div id="line4" class="line">Loading Personal Files...</div>
+        <div id="line5" class="line">Starting User Interface...</div>
+        <div id="line6" class="line">Welcome to Site OS v1.0</div>
+    </div>
+
+    <header>
+        <h1>Welcome</h1>
+        <nav>
+            <a href="#">Early</a>
+            <a href="#">Beta</a>
+            <a href="#">Site</a>
+        </nav>
+    </header>
+
+    <div class="window" id="about">
+        <div class="title-container" onmousedown="startDrag(event, 'about')">
+            <span>About Me</span>
+            <div>
+                <button class="button" onclick="minimize('about')">_</button>
+                <button class="button" onclick="toggleFullscreen('about')">[ ]</button>
+                <button class="button" onclick="closeWindow('about')">X</button>
+            </div>
+        </div>
+        <div class="content-container">
+            <p>Hello there im Mazi im a amature programmer im mostly familiar with C# C++ Python Lua PHP JS JSON and some other languages im 17 and looking for some project ideas cause im lazy asf.</p>
+        </div>
+    </div>
+
+    <div class="window" id="projects">
+        <div class="title-container" onmousedown="startDrag(event, 'projects')">
+            <span>Projects</span>
+            <div>
+                <button class="button" onclick="minimize('projects')">_</button>
+                <button class="button" onclick="toggleFullscreen('projects')">[ ]</button>
+                <button class="button" onclick="closeWindow('projects')">X</button>
+            </div>
+        </div>
+        <div class="content-container">
+            <p>Thats the point i dont have em yet but im gonna list them soon when i start posting on my github page</p>
+        </div>
+    </div>
+
+    <div class="window" id="contact">
+        <div class="title-container" onmousedown="startDrag(event, 'contact')">
+            <span>Contact</span>
+            <div>
+                <button class="button" onclick="minimize('contact')">_</button>
+                <button class="button" onclick="toggleFullscreen('contact')">[ ]</button>
+                <button class="button" onclick="closeWindow('contact')">X</button>
+            </div>
+        </div>
+        <div class="content-container">
+            <p>you can contact me on discord Archangel1911 or due email sabackblack349@gmail.com .</p>
+        </div>
+    </div>
+
+    <div class="music-player">
+        <div class="music-controls">
+            <button id="playButton">Play</button>
+            <button id="pauseButton" style="display: none;">Pause</button>
+        </div>
+        <input type="range" id="progress" class="progress" value="0" step="1" min="0" max="100">
+        <audio id="audio" src="freeb.mp3"></audio>
+    </div>
+
+    <script>
+        
+        setTimeout(() => {
+            document.getElementById('bootOverlay').classList.add('fade-out');
+        }, 10000);
+
+        // what if ninja got a low taper fade?
+        const audio = document.getElementById('audio');
+        const playButton = document.getElementById('playButton');
+        const pauseButton = document.getElementById('pauseButton');
+        const progress = document.getElementById('progress');
+
+        playButton.addEventListener('click', () => {
+            audio.play();
+            playButton.style.display = 'none'; 
+            pauseButton.style.display = 'inline'; 
+        });
+
+        pauseButton.addEventListener('click', () => {
+            audio.pause();
+            pauseButton.style.display = 'none'; 
+            playButton.style.display = 'inline'; 
+        });
+
+        audio.addEventListener('timeupdate', () => {
+            progress.value = (audio.currentTime / audio.duration) * 100; 
+        });
+
+        progress.addEventListener('input', () => {
+            audio.currentTime = (progress.value / 100) * audio.duration;
+        });
+
+        
+        let offsetX, offsetY, currentWindow;
+
+        function startDrag(e, id) {
+            currentWindow = document.getElementById(id);
+            offsetX = e.clientX - currentWindow.getBoundingClientRect().left;
+            offsetY = e.clientY - currentWindow.getBoundingClientRect().top;
+
+            document.addEventListener('mousemove', dragWindow);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function dragWindow(e) {
+            if (!currentWindow) return;
+            currentWindow.style.left = `${e.clientX - offsetX}px`;
+            currentWindow.style.top = `${e.clientY - offsetY}px`;
+        }
+
+        function stopDrag() {
+            document.removeEventListener('mousemove', dragWindow);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        function minimize(id) {
+            const win = document.getElementById(id);
+            win.querySelector('.content-container').classList.toggle('hidden');
+        }
+
+        function toggleFullscreen(id) {
+            const win = document.getElementById(id);
+            if (win.style.width === '100%') {
+                win.style.width = ''; 
+                win.style.height = '';
+            } else {
+                win.style.width = '100%';
+                win.style.height = '100%'; 
+                win.style.left = '0';
+                win.style.top = '0';
+            }
+        }
+
+        function closeWindow(id) {
+            const win = document.getElementById(id);
+            win.remove();
+        }
+
+        function positionAndSizeWindows() {
+            const windows = Array.from(document.querySelectorAll('.window'));
+            const occupiedPositions = [];
+
+            windows.forEach(win => {
+                let width, height, xPos, yPos, overlaps;
+
+                do {
+                    overlaps = false;
+
+                   
+                    width = Math.floor(Math.random() * (400 - 220)) + 220; 
+                    height = Math.floor(Math.random() * (300 - 100)) + 100; 
+
+                   
+                    xPos = Math.floor(Math.random() * (window.innerWidth - width - 40));
+                    yPos = Math.floor(Math.random() * (window.innerHeight - height - 40));
+
+                  
+                    occupiedPositions.forEach(pos => {
+                        if (
+                            xPos < pos.x + pos.width &&
+                            xPos + width > pos.x &&
+                            yPos < pos.y + pos.height &&
+                            yPos + height > pos.y
+                        ) {
+                            overlaps = true;
+                        }
+                    });
+                } while (overlaps);
+
+                win.style.left = `${xPos}px`;
+                win.style.top = `${yPos}px`;
+                win.style.width = `${width}px`;
+                win.style.height = `${height}px`;
+
+                occupiedPositions.push({ x: xPos, y: yPos, width, height });
+            });
+        }
+
+        positionAndSizeWindows();
+    </script>
+</body>
+</html>
