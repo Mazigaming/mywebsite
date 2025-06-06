@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Arch Linux Terminal - Neofetch</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap');
+  body {
+    margin: 0;
+    background-color: #2e3436;
+    color: #eeeeec;
+    font-family: 'Fira Mono', monospace, monospace;
+    font-size: 16px;
+    line-height: 1.6;
+    padding: 0;
+  }
+  .terminal-window {
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    background-color: #000000;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: auto;
+  }
+  .terminal-header {
+    background: linear-gradient(to right, #4e9a06, #8ae234);
+    padding: 8px 12px;
+    color: #2e3436;
+    font-weight: bold;
+    font-size: 14px;
+    user-select: none;
+  }
+  .terminal-content {
+    padding: 20px;
+    white-space: pre;
+    font-weight: normal;
+    font-family: 'Fira Mono', monospace, monospace;
+    letter-spacing: 0 !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    white-space: pre-wrap !important;
+  }
+  .color-blue { color: #729fcf; }
+  .color-cyan { color: #34e2e2; }
+  .color-green { color: #8ae234; }
+  .color-magenta { color: #ad7fa8; }
+  .color-red { color: #ef2929; }
+  .color-yellow { color: #fce94f; }
+  .color-white { color: #eeeeec; }
+  .color-black { color: #2e3436; }
+  .color-bold { font-weight: bold; }
+  .color-reset { color: #eeeeec; font-weight: normal; }
+  .color-prompt { color: #729fcf; }
+  .color-user { color: #8ae234; }
+  .color-host { color: #34e2e2; }
+  .color-command { color: #fce94f; }
+  .color-key { color: #ad7fa8; }
+  .color-value { color: #eeeeec; }
+  .color-key-highlight { color: #729fcf; font-weight: bold; }
+  .color-value-highlight { color: #8ae234; font-weight: bold; }
+  .color-palette {
+    margin-top: 20px;
+    display: flex;
+    gap: 4px;
+  }
+  .color-block {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+  }
+  .color-block.black { background: #2e3436; }
+  .color-block.red { background: #cc0000; }
+  .color-block.green { background: #4e9a06; }
+  .color-block.yellow { background: #c4a000; }
+  .color-block.blue { background: #3465a4; }
+  .color-block.magenta { background: #75507b; }
+  .color-block.cyan { background: #06989a; }
+  .color-block.white { background: #d3d7cf; }
+  
+</style>
+<style>
+  #sad {
+    background: linear-gradient(270deg, #b19cd9, #6a4c93);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientMove 8s ease infinite;
+  }
+  @keyframes gradientMove {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="terminal-window" role="main" aria-label="Terminal window">
+    <div class="terminal-header">DIE@DIE-PLS ~</div>
+    <div class="terminal-content" id="terminal-content">
+<span class="color-prompt color-user">Mazi</span><span class="color-reset">@</span><span class="color-prompt color-host">Mazi-OS</span><span class="color-reset">:~$ </span><span class="color-command">neofetch</span>
+
+<span class="color-cyan">            .-`</span>
+<span class="color-cyan">          .o+`</span>
+<span class="color-cyan">         `ooo/</span>
+<span class="color-cyan">        `+oooo:</span>
+<span class="color-cyan">       `+oooooo:</span>
+<span class="color-cyan">       -+oooooo+:</span>
+<span class="color-cyan">     `/:-:++oooo+:</span>
+<span class="color-cyan">    `/++++/+++++++:`</span>
+<span class="color-cyan">   `/++++++++++++++:`</span>
+<span class="color-cyan">  `/+++ooooooooooooo/`</span>
+<span class="color-cyan">  .`ooosssso++osssssso+`</span>
+<span class="color-cyan">  `+sso+:-`  `.-/+oso+`</span>
+<span class="color-cyan">  `++:.        `-/+/:`</span>
+<br/>
+<span class="color-user">Mazi@Mazi-OS</span><span class="color-reset"> -----------</span><br/>
+<span class="color-key">OS:</span> <span class="color-value color-bold">Arch Linux x86_64</span><br/>
+<span class="color-key">Kernel:</span> <span class="color-value">5.15.64-1-lts</span><br/>
+<span class="color-key">Uptime:</span> <span class="color-value">8 hours</span><br/>
+<span class="color-key">Packages:</span> <span class="color-value">1188 (pacman), 27 (flatpak)</span><br/>
+<span class="color-key">Shell:</span> <span class="color-value">bash 5.1.16</span><br/>
+<span class="color-key">Resolution:</span> <span class="color-value">1920x1080</span><br/>
+<span class="color-key">DE:</span> <span class="color-value">GNOME 42.4</span><br/>
+<span class="color-key">WM:</span> <span class="color-value">Mutter</span><br/>
+<span class="color-key">WM Theme:</span> <span class="color-value">Adwaita</span><br/>
+<span class="color-key">Theme:</span> <span class="color-value">Pop-dark [GTK2/3]</span><br/>
+<span class="color-key">Icons:</span> <span class="color-value">Pop [GTK2/3]</span><br/>
+<span class="color-key">Terminal:</span> <span class="color-value">gnome-terminal</span><br/>
+<span class="color-key">CPU:</span> <span class="color-value">AMD Ryzen 5 3400G (8) @ 3.700GHz</span><br/>
+<span class="color-key">GPU:</span> <span class="color-value">AMD ATI Radeon Vega Series / Radeon Vega Mobile Series</span><br/>
+<span class="color-key">Memory:</span> <span class="color-value">4758MiB / 13909MiB</span><br/>
+<span class="color-value" id="sad">In the restless sky, the moon does sigh,
+
+My eyes entwined, where dreams lie high.
+
+Upon the you, the me, the love,
+
+A gentle whisper from stars above.
+
+Stalling just out of reach, it seems,
+
+A fleeting shadow in tangled dreams.
+
+Never mine to hold or unleash,
+
+Yet in my heart, you find your peace.
+
+A dance of light, a silent plea,
+
+In the vast expanse of what could be.
+
+Though love may linger, just out of sight,
+
+In the moonlit glow, you are my light.</span><br/>
+
+<div class="color-palette" aria-label="Color palette">
+  <div class="color-block black"></div>
+  <div class="color-block red"></div>
+  <div class="color-block green"></div>
+  <div class="color-block yellow"></div>
+  <div class="color-block blue"></div>
+  <div class="color-block magenta"></div>
+  <div class="color-block cyan"></div>
+  <div class="color-block white"></div>
+</div>
+    </div>
+  </div>
+  <p style="text-align:center; margin-top: 20px;">
+    <a href="index.html" style="color:#66d9ef; text-decoration:none;">← Back to Main Site</a>
+  </p>
+</body>
+</html>
