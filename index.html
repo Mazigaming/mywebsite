@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 12px;
+            position: relative;
+            color: #ccc;
+            font-family: 'Press Start 2P', cursive;
+            background-color: rgba(20, 10, 30, 0.8);
+            background-blend-mode: multiply;
+        }
+
+        .boot-overlay img {
+            width: 100vw !important;
+            height: 100vh !important;
+            object-fit: cover !important;
+            filter: grayscale(90%) brightness(50%) contrast(120%) !important;
+            border-radius: 0 !important;
+            box-shadow: 0 0 30px rgba(100, 50, 150, 0.8) !important;
+            cursor: pointer !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            display: block !important;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            color: #a8a0c0;
+            text-shadow: 0 0 5px #6a4c93;
+        }
+
+        nav a {
+            color: #8a7db3;
+            margin: 0 15px;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #c0b0e0;
+        }
+
+        .window {
+            border: 2px solid #6a4c93;
+            background-color: rgba(30, 20, 50, 0.85);
+            box-shadow: 0 0 20px rgba(100, 50, 150, 0.7);
+            position: absolute;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-width: 220px;
+            max-width: 400px;
+            min-height: 100px;
+            cursor: move;
+            z-index: 10;
+            font-size: 10px;
+            color: #ccc;
+        }
+
+        .title-container {
+            background-color: #4b3a6b;
+            color: #c0b0e0;
+            padding: 5px;
+            border-bottom: 2px solid #6a4c93;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-shadow: 0 0 3px #6a4c93;
+        }
+
+        .content-container {
+            padding: 10px;
+            flex-grow: 1;
+            color: #bbb;
+        }
+
+        .button {
+            background-color: transparent;
+            border: none;
+            color: #a8a0c0;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .button:hover {
+            color: #c0b0e0;
+        }
+
+        .boot-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(20, 10, 30, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+        }
+
+        .line {
+            opacity: 0;
+            animation: type 1s steps(20, end) forwards;
+            color: #b0a0d0;
+            text-shadow: 0 0 5px #6a4c93;
+        }
+
+        @keyframes type {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Line delays */
+        #line1 {
+            animation-delay: 1s;
+        }
+        #line2 {
+            animation-delay: 2s;
+        }
+        #line3 {
+            animation-delay: 3s;
+        }
+        #line4 {
+            animation-delay: 4s;
+        }
+        #line5 {
+            animation-delay: 5s;
+        }
+        #line6 {
+            animation-delay: 6s;
+        }
+
+        .boot-overlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #background-video {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -1;
+            object-fit: cover;
+        }
+
+        .music-player {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <video autoplay loop id="background-video" playsinline>
+        <source src="cya.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+    </video>
+
+    <div class="boot-overlay" id="bootOverlay">
+        <img src="gif1.gif" alt="Loading..." />
+    </div>
+
+    <header>
+        <h1>Goodbye</h1>
+        <nav>
+            <a href="https://dontasktoask.com/">Just ask</a>
+            <a href="https://4chan.org/index.php?">For</a>
+            <a href="https://telefonzaufania.org/">Help</a>
+            <a href="terminal.html"> also a Terminal</a>
+        </nav>
+    </header>
+
+    <div class="window" id="about">
+        <div class="title-container" onmousedown="startDrag(event, 'about')">
+            <span>About Me</span>
+            <div>
+                <button class="button" onclick="minimize('about')">_</button>
+                <button class="button" onclick="toggleFullscreen('about')">[ ]</button>
+                <button class="button" onclick="closeWindow('about')">X</button>
+            </div>
+        </div>
+        <div class="content-container">
+            <p>Hello there im Mazi im a Junior Developer im mostly familiar with C# C++ Python Lua PHP JS JSON and some other languages im 17 and dunno what to do with me life</p>
+        </div>
+    </div>
+
+    <div class="window" id="projects">
+        <div class="title-container" onmousedown="startDrag(event, 'projects')">
+            <span>Projects</span>
+            <div>
+                <button class="button" onclick="minimize('projects')">_</button>
+                <button class="button" onclick="toggleFullscreen('projects')">[ ]</button>
+                <button class="button" onclick="closeWindow('projects')">X</button>
+            </div>
+        </div>
+        <div class="content-container">
+            <p>Some gay ass projects of mine</p>
+            <p><a href="https://github.com/Mazigaming/shitty-ass-lua-x-C/tree/master">-Shitty ass lua integration with C using newlib</a> </p>
+            <p><a href="https://github.com/Mazigaming/Shittyassgaydiscordbot">-Job application Discord Bot</a></p>
+            <p><a href="https://github.com/Mazigaming/Branch-Manager">-Internship project</a></p>
+            <p>Note Able things</p>
+            <p><a href="https://github.com/zstrzeszow/zstparty">-A basis for 4chan like project for my highschool</a></p>
+            <p>and a lot more id like not to mention due to digital footprint</p>
+        </div>
+    </div>
+
+    <div class="window" id="contact">
+        <div class="title-container" onmousedown="startDrag(event, 'contact')">
+            <span>Contact</span>
+            <div>
+                <button class="button" onclick="minimize('contact')">_</button>
+                <button class="button" onclick="toggleFullscreen('contact')">[ ]</button>
+                <button class="button" onclick="closeWindow('contact')">X</button>
+            </div>
+        </div>
+        <div class="content-container">
+            <p>you can contact me on discord Archangel1911 or due email sabackblack349@gmail.com(please dont)</p>
+        </div>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            document.getElementById('bootOverlay').classList.add('fade-out');
+        }, 10000);
+
+        document.querySelector('.boot-overlay img').addEventListener('click', () => {
+            document.getElementById('bootOverlay').classList.add('fade-out');
+        });
+
+        document.querySelector('.boot-overlay img').addEventListener('click', () => {
+            document.getElementById('bootOverlay').classList.add('fade-out');
+        });
+
+        let offsetX, offsetY, currentWindow;
+
+        function startDrag(e, id) {
+            currentWindow = document.getElementById(id);
+            offsetX = e.clientX - currentWindow.getBoundingClientRect().left;
+            offsetY = e.clientY - currentWindow.getBoundingClientRect().top;
+
+            document.addEventListener('mousemove', dragWindow);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function dragWindow(e) {
+            if (!currentWindow) return;
+            currentWindow.style.left = `${e.clientX - offsetX}px`;
+            currentWindow.style.top = `${e.clientY - offsetY}px`;
+        }
+
+        function stopDrag() {
+            document.removeEventListener('mousemove', dragWindow);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        function minimize(id) {
+            const win = document.getElementById(id);
+            win.querySelector('.content-container').classList.toggle('hidden');
+        }
+
+        function toggleFullscreen(id) {
+            const win = document.getElementById(id);
+            if (win.style.width === '100%') {
+                win.style.width = '';
+                win.style.height = '';
+            } else {
+                win.style.width = '100%';
+                win.style.height = '100%';
+                win.style.left = '0';
+                win.style.top = '0';
+            }
+        }
+
+        function closeWindow(id) {
+            const win = document.getElementById(id);
+            win.remove();
+        }
+
+        positionAndSizeWindows();
+    </script>
+</body>
+</html>
