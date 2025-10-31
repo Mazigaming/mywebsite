@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Probability Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ POKER ODDS ANALYZER ⚡</h1>
+            <p>Professional Real-Time Hand Equity & Probability Calculator</p>
+        </div>
+
+        <div class="main-content">
+            <div class="section">
+                <h2>🎴 YOUR HOLE CARDS</h2>
+                <div class="hole-cards-display">
+                    <div class="hole-card-slot" id="holeCard1Slot">
+                        <button class="card-picker-btn" data-card-slot="card1">
+                            <span class="card-placeholder">Click to Select</span>
+                        </button>
+                    </div>
+                    <div class="hole-card-slot" id="holeCard2Slot">
+                        <button class="card-picker-btn" data-card-slot="card2">
+                            <span class="card-placeholder">Click to Select</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-display" id="playerCards"></div>
+            </div>
+
+            <div class="section">
+                <h2>🎲 COMMUNITY CARDS</h2>
+                <div class="community-cards-display">
+                    <div class="community-card-slot">
+                        <button class="card-picker-btn community-btn" data-card-slot="flop1">
+                            <span class="card-placeholder">Flop 1</span>
+                        </button>
+                    </div>
+                    <div class="community-card-slot">
+                        <button class="card-picker-btn community-btn" data-card-slot="flop2">
+                            <span class="card-placeholder">Flop 2</span>
+                        </button>
+                    </div>
+                    <div class="community-card-slot">
+                        <button class="card-picker-btn community-btn" data-card-slot="flop3">
+                            <span class="card-placeholder">Flop 3</span>
+                        </button>
+                    </div>
+                    <div class="community-card-slot">
+                        <button class="card-picker-btn community-btn" data-card-slot="turn">
+                            <span class="card-placeholder">Turn</span>
+                        </button>
+                    </div>
+                    <div class="community-card-slot">
+                        <button class="card-picker-btn community-btn" data-card-slot="river">
+                            <span class="card-placeholder">River</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-display" id="communityCards"></div>
+            </div>
+
+            <div class="section">
+                <h2>👥 OPPONENT COUNT</h2>
+                <div class="opponent-selector">
+                    <label>Number of Opponents:</label>
+                    <select id="numOpponents" class="select-small">
+                        <option value="1">1</option>
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="section results-section">
+                <h2>⚔ ODDS & EQUITY</h2>
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="result-label">Current Hand</div>
+                        <div class="result-value" id="handRank">—</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Win vs Opponents</div>
+                        <div class="result-value percentage" id="winProb">—</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Equity Share</div>
+                        <div class="result-value percentage" id="equity">—</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-label">Outs to Improve</div>
+                        <div class="result-value" id="outs">—</div>
+                    </div>
+                </div>
+
+                <div class="odds-details" id="oddsDetails"></div>
+                <div class="odds-details" id="progressBar"></div>
+            </div>
+
+            <div class="section">
+                <button class="btn-reset" onclick="resetCalculator()">🔄 RESET ALL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Picker Modal -->
+    <div class="card-picker-modal" id="cardPickerModal">
+        <div class="card-picker-modal-content">
+            <div class="card-picker-header">
+                <h3>Select a Card</h3>
+                <button class="modal-close" id="closeCardPicker">&times;</button>
+            </div>
+            <div class="card-picker-grid" id="cardPickerGrid"></div>
+            <button class="modal-clear-btn" id="clearCardBtn">Clear Selection</button>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <script src="calculator.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
