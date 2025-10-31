@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>404 - Not Found</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 12px;
+            position: relative;
+            color: #ccc;
+            font-family: 'Press Start 2P', cursive;
+            background-color: rgba(20, 10, 30, 0.8);
+            background-blend-mode: multiply;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #background-video {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -1;
+            object-fit: cover;
+        }
+
+        .error-container {
+            text-align: center;
+            border: 2px solid #6a4c93;
+            background-color: rgba(30, 20, 50, 0.85);
+            box-shadow: 0 0 20px rgba(100, 50, 150, 0.7);
+            padding: 40px;
+            max-width: 600px;
+            border-radius: 4px;
+        }
+
+        .error-code {
+            font-size: 48px;
+            color: #ff6b6b;
+            text-shadow: 0 0 10px #ff6b6b;
+            margin-bottom: 20px;
+            animation: blink 1s infinite;
+        }
+
+        .error-message {
+            font-size: 24px;
+            color: #a8a0c0;
+            text-shadow: 0 0 5px #6a4c93;
+            margin-bottom: 30px;
+        }
+
+        .error-text {
+            font-size: 14px;
+            color: #bbb;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .back-link {
+            display: inline-block;
+            background-color: #4b3a6b;
+            color: #c0b0e0;
+            padding: 10px 20px;
+            border: 2px solid #6a4c93;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            text-shadow: 0 0 3px #6a4c93;
+        }
+
+        .back-link:hover {
+            background-color: #6a4c93;
+            box-shadow: 0 0 15px rgba(100, 50, 150, 0.8);
+            color: #e0d0ff;
+        }
+
+        @keyframes blink {
+            0%, 50% {
+                opacity: 1;
+            }
+            51%, 100% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+<body>
+    <video autoplay loop id="background-video" playsinline>
+        <source src="cya.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+    </video>
+
+    <div class="error-container">
+        <div class="error-code">404</div>
+        <div class="error-message">Page Not Found</div>
+        <div class="error-text">
+            <p>The page you're looking for doesn't exist or has been moved.</p>
+            <p>It's like searching for a valid poker hand in an empty deck.</p>
+        </div>
+        <a href="/" class="back-link">Return Home</a>
+    </div>
+</body>
+</html>
