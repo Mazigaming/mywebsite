@@ -282,6 +282,9 @@ function startGame(gameType) {
         case 'coinflip':
             openCoinflipGame();
             break;
+        case 'kingscorner':
+            window.location.href = 'kings-corner.html';
+            break;
     }
 }
 

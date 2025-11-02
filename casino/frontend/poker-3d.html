@@ -367,17 +367,17 @@
             container.appendChild(gameState.renderer.domElement);
 
             // Lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
             gameState.scene.add(ambientLight);
 
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(5, 5, 7);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            directionalLight.position.set(5, 8, 7);
             directionalLight.castShadow = true;
             directionalLight.shadow.mapSize.width = 2048;
             directionalLight.shadow.mapSize.height = 2048;
             gameState.scene.add(directionalLight);
 
-            const pointLight = new THREE.PointLight(0xff00ff, 0.5);
+            const pointLight = new THREE.PointLight(0xff00ff, 0.6);
             pointLight.position.set(-5, 3, 3);
             gameState.scene.add(pointLight);
 
@@ -392,7 +392,7 @@
             // Table surface
             const geometry = new THREE.CylinderGeometry(6, 6, 0.1, 32);
             const material = new THREE.MeshStandardMaterial({
-                color: 0x0a4e2e,
+                color: 0x1a5d3a,
                 roughness: 0.8,
                 metalness: 0.1
             });
@@ -602,28 +602,30 @@
             gameState.cardObjects.forEach(card => gameState.scene.remove(card));
             gameState.cardObjects = [];
             
-            // Player cards (right side)
-            const playerX = -2.5;
+            // Player cards (bottom)
+            const playerY = -2.2;
             gameState.playerCards.forEach((card, i) => {
-                const pos = new THREE.Vector3(playerX + i * 0.9, -1.5, 1);
+                const pos = new THREE.Vector3(-0.5 + i * 0.9, playerY, 0.8);
                 createCard(card.slice(0, -1), card.slice(-1), pos, true);
             });
             
-            // Dealer cards (left side, one hidden)
-            const dealerX = 2.5;
-            createCard('?', '?', new THREE.Vector3(dealerX, 1.5, 1), false);
+            // Dealer cards (top, one hidden)
+            const dealerY = 2.2;
+            createCard('?', '?', new THREE.Vector3(-0.5, dealerY, 0.8), false);
             if (gameState.gamePhase === 'showdown') {
                 const card = gameState.dealerCards[1];
-                createCard(card.slice(0, -1), card.slice(-1), new THREE.Vector3(dealerX + 0.9, 1.5, 1), true);
+                createCard(card.slice(0, -1), card.slice(-1), new THREE.Vector3(0.4, dealerY, 0.8), true);
             } else {
-                createCard(gameState.dealerCards[1].slice(0, -1), gameState.dealerCards[1].slice(-1), new THREE.Vector3(dealerX + 0.9, 1.5, 1), true);
+                createCard(gameState.dealerCards[1].slice(0, -1), gameState.dealerCards[1].slice(-1), new THREE.Vector3(0.4, dealerY, 0.8), true);
             }
             
             // Community cards (center)
             if (gameState.communityCards.length > 0) {
-                const startX = -(gameState.communityCards.length - 1) * 0.45;
+                const spacing = 0.85;
+                const totalWidth = (gameState.communityCards.length - 1) * spacing;
+                const startX = -totalWidth / 2;
                 gameState.communityCards.forEach((card, i) => {
-                    const pos = new THREE.Vector3(startX + i * 0.9, 0, 1);
+                    const pos = new THREE.Vector3(startX + i * spacing, 0.2, 0.5);
                     createCard(card.slice(0, -1), card.slice(-1), pos, true);
                 });
             }

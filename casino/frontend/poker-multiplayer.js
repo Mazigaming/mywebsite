@@ -119,11 +119,14 @@ function dealHand() {
 }
 
 function showPlayerTurn() {
-    const player = gameState.players[gameState.currentPlayerIndex];
+    // Find next player who can still act
+    let attempts = 0;
+    let player = gameState.players[gameState.currentPlayerIndex];
     
-    // Check for all-in or folded
-    while ((player.allIn || player.folded || player.balance === 0) && gameState.activePlayers.length > 1) {
+    while ((player.allIn || player.folded || player.balance === 0) && attempts < gameState.players.length) {
         gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
+        player = gameState.players[gameState.currentPlayerIndex];
+        attempts++;
     }
 
     document.getElementById('modalPlayerName').textContent = player.name + "'s Turn";
@@ -177,9 +180,14 @@ function showRaiseInput() {
     const toCall = gameState.currentBet - player.bet;
     const maxRaise = player.balance - toCall;
 
+    if (maxRaise < gameState.minBet) {
+        alert('Cannot raise - insufficient balance');
+        return;
+    }
+
     let html = `
         <div class="bet-input-group">
-            <label>Raise Amount: </label>
+            <label>Enter Raise Amount (min $${gameState.minBet}, max $${maxRaise}): </label>
             <input type="number" id="raiseAmount" min="${gameState.minBet}" max="${maxRaise}" value="${gameState.minBet}" class="bet-input">
             <button class="btn success" onclick="playerAction('raise')">RAISE</button>
             <button class="btn" onclick="showBettingOptions()">CANCEL</button>
@@ -212,8 +220,24 @@ function playerAction(action) {
             }
             break;
         case 'raise':
-            const raiseAmount = parseInt(document.getElementById('raiseAmount').value);
+            const raiseAmountInput = document.getElementById('raiseAmount');
+            if (!raiseAmountInput) {
+                console.error('Raise amount input not found');
+                return;
+            }
+            const raiseAmount = parseInt(raiseAmountInput.value) || 0;
+            
+            if (raiseAmount < gameState.minBet) {
+                alert(`Minimum raise is $${gameState.minBet}`);
+                return;
+            }
+            
             const totalBet = toCall + raiseAmount;
+            if (totalBet > player.balance) {
+                alert(`Insufficient balance. Max raise is $${player.balance - toCall}`);
+                return;
+            }
+            
             player.balance -= totalBet;
             player.bet += totalBet;
             gameState.pot += totalBet;
@@ -226,6 +250,7 @@ function playerAction(action) {
             player.balance = 0;
             player.allIn = true;
             gameState.currentBet = Math.max(gameState.currentBet, player.bet);
+            gameState.activePlayers = gameState.players.filter(p => !p.folded && p.balance > 0);
             break;
     }
 
@@ -243,9 +268,16 @@ function playerAction(action) {
 }
 
 function isBettingRoundComplete() {
-    return gameState.activePlayers.every(p => 
-        p.folded || p.allIn || p.bet === gameState.currentBet || p.balance === 0
-    );
+    // Get players who can still act (not folded, not all-in, has balance)
+    const canActPlayers = gameState.players.filter(p => !p.folded && !p.allIn && p.balance > 0);
+    
+    // If 0 or 1 can act, round is complete
+    if (canActPlayers.length <= 1) {
+        return true;
+    }
+    
+    // Check if all can-act players have matched the current bet
+    return canActPlayers.every(p => p.bet === gameState.currentBet);
 }
 
 function advanceGamePhase() {
