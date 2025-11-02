@@ -405,25 +405,37 @@
         }
 
         function createFeltTable() {
-            const geometry = new THREE.EllipseGeometry(6, 4, 32);
+            // Create ellipse table using LatheGeometry
+            const points = [];
+            for (let i = 0; i <= 32; i++) {
+                const angle = (i / 32) * Math.PI * 2;
+                const x = 6 * Math.cos(angle);
+                const y = 4 * Math.sin(angle);
+                points.push(new THREE.Vector2(Math.sqrt(x*x + y*y), 0));
+            }
+            
+            const geometry = new THREE.CylinderGeometry(6, 6, 0.1, 32, 1, false);
             const material = new THREE.MeshStandardMaterial({
                 color: 0x0a4e2e,
                 roughness: 0.8,
                 metalness: 0.1
             });
             const table = new THREE.Mesh(geometry, material);
+            table.scale.set(1, 1, 0.4);
             table.receiveShadow = true;
             gameState.scene.add(table);
 
-            // Table edge highlight
-            const edgeGeometry = new THREE.TorusGeometry(6, 0.1, 16, 32);
+            // Table edge highlight - use torus
+            const edgeGeometry = new THREE.TorusGeometry(6, 0.15, 16, 32);
             const edgeMaterial = new THREE.MeshStandardMaterial({
                 color: 0xd4af37,
                 roughness: 0.3,
                 metalness: 0.8
             });
             const edge = new THREE.Mesh(edgeGeometry, edgeMaterial);
-            edge.position.z = 0.01;
+            edge.position.z = 0.06;
+            edge.rotation.x = Math.PI / 2;
+            edge.scale.set(1, 0.67, 1);
             edge.castShadow = true;
             gameState.scene.add(edge);
         }
