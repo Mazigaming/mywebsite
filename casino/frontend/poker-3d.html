@@ -98,6 +98,8 @@
             gap: 20px;
             z-index: 10;
             pointer-events: all;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         button {
@@ -115,7 +117,7 @@
             text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
         }
 
-        button:hover {
+        button:hover:not(:disabled) {
             transform: scale(1.1);
             box-shadow: 0 0 40px rgba(255, 0, 255, 1);
             background: linear-gradient(135deg, #ff0080, #ff00ff);
@@ -163,25 +165,6 @@
             color: #ff00ff;
             text-shadow: 0 0 10px #ff00ff;
             box-shadow: 0 0 20px rgba(255, 0, 255, 0.8);
-        }
-
-        .dealer-badge {
-            position: absolute;
-            background: linear-gradient(135deg, #ffd700, #ffed4e);
-            color: #000;
-            padding: 8px 15px;
-            border-radius: 50%;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 10px;
-            font-weight: bold;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            z-index: 11;
         }
 
         .modal {
@@ -232,6 +215,7 @@
             display: flex;
             gap: 20px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .back-btn {
@@ -299,21 +283,18 @@
                     <div class="stat-label">Pot</div>
                     <div class="stat-value" id="pot">$0</div>
                 </div>
-                <div class="stat-box">
-                    <div class="stat-label">Winnings</div>
-                    <div class="stat-value" id="winnings">$0</div>
-                </div>
             </div>
         </div>
 
         <div class="game-info" id="gameInfo" style="display: none;"></div>
 
         <div class="hud-bottom">
-            <button id="betBtn" onclick="placeBet()">PLACE BET</button>
-            <button id="hitBtn" onclick="hitCard()">HIT</button>
-            <button id="standBtn" onclick="stand()">STAND</button>
-            <button id="foldBtn" onclick="fold()">FOLD</button>
-            <button id="newGameBtn" onclick="newGame()">NEW GAME</button>
+            <button id="checkBtn" onclick="playerCheck()" style="display: none;">CHECK</button>
+            <button id="callBtn" onclick="playerCall()" style="display: none;">CALL</button>
+            <button id="raiseBtn" onclick="playerRaise()" style="display: none;">RAISE</button>
+            <button id="allInBtn" onclick="playerAllIn()" style="display: none;">ALL IN</button>
+            <button id="foldBtn" onclick="playerFold()" style="display: none;">FOLD</button>
+            <button id="newGameBtn" onclick="newGame()" style="display: none;">NEW GAME</button>
         </div>
 
         <button class="back-btn" onclick="goBack()">← BACK</button>
@@ -321,45 +302,51 @@
 
     <div class="modal" id="startModal">
         <div class="modal-content">
-            <h2>🎰 WELCOME 🎰</h2>
-            <p>Enter your starting bet:</p>
-            <input id="betInput" type="number" min="10" max="500" value="50" 
-                   style="background: #1a1a2e; border: 2px solid #00ff00; color: #00ff00; padding: 10px; 
-                          font-family: 'Press Start 2P'; font-size: 12px; text-align: center; margin-bottom: 20px;
-                          border-radius: 4px; width: 200px;">
+            <h2>🎰 TEXAS HOLD'EM 🎰</h2>
+            <p>Playing vs AI Dealer. Ready to play?</p>
             <div class="modal-buttons">
                 <button onclick="startGame()">START GAME</button>
+                <button onclick="goBack()">EXIT</button>
             </div>
         </div>
     </div>
 
-    <div class="modal" id="gameOverModal">
+    <div class="modal" id="resultModal">
         <div class="modal-content">
-            <h2 id="resultTitle">GAME OVER</h2>
-            <p id="resultText">You Lost!</p>
+            <h2 id="resultTitle">ROUND RESULT</h2>
+            <p id="resultText">Game result</p>
+            <p id="resultHand" style="color: #4ade80; margin-top: 15px;"></p>
             <div class="modal-buttons">
-                <button onclick="newGame()">PLAY AGAIN</button>
+                <button onclick="continueGame()">CONTINUE</button>
                 <button onclick="goBack()">EXIT</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Game state
+        // 3D Game State
         let gameState = {
             balance: 1000,
-            currentBet: 0,
             pot: 0,
-            winnings: 0,
+            playerCards: [],
+            dealerCards: [],
+            communityCards: [],
+            currentBet: 0,
+            playerBet: 0,
+            dealerBet: 0,
+            playerBalance: 1000,
+            dealerBalance: 5000,
+            gamePhase: 'idle',
             gameActive: false,
             scene: null,
             camera: null,
             renderer: null,
-            cards: [],
-            chips: []
+            cardObjects: [],
+            wins: 0,
+            handsPlayed: 0
         };
 
-        // Initialize Three.js scene
+        // Three.js Setup
         function initThreeJS() {
             const container = document.getElementById('canvas-container');
             
@@ -397,24 +384,13 @@
             // Create felt table
             createFeltTable();
             
-            // Handle window resize
             window.addEventListener('resize', onWindowResize);
-            
-            // Start animation loop
             animate();
         }
 
         function createFeltTable() {
-            // Create ellipse table using LatheGeometry
-            const points = [];
-            for (let i = 0; i <= 32; i++) {
-                const angle = (i / 32) * Math.PI * 2;
-                const x = 6 * Math.cos(angle);
-                const y = 4 * Math.sin(angle);
-                points.push(new THREE.Vector2(Math.sqrt(x*x + y*y), 0));
-            }
-            
-            const geometry = new THREE.CylinderGeometry(6, 6, 0.1, 32, 1, false);
+            // Table surface
+            const geometry = new THREE.CylinderGeometry(6, 6, 0.1, 32);
             const material = new THREE.MeshStandardMaterial({
                 color: 0x0a4e2e,
                 roughness: 0.8,
@@ -425,7 +401,7 @@
             table.receiveShadow = true;
             gameState.scene.add(table);
 
-            // Table edge highlight - use torus
+            // Table edge
             const edgeGeometry = new THREE.TorusGeometry(6, 0.15, 16, 32);
             const edgeMaterial = new THREE.MeshStandardMaterial({
                 color: 0xd4af37,
@@ -440,10 +416,9 @@
             gameState.scene.add(edge);
         }
 
-        function createCard(rank, suit, position) {
+        function createCard(rank, suit, position, faceUp = true) {
             const group = new THREE.Group();
             
-            // Card body
             const cardGeometry = new THREE.BoxGeometry(0.7, 1, 0.05);
             const cardMaterial = new THREE.MeshStandardMaterial({
                 color: 0xffffff,
@@ -454,80 +429,56 @@
             card.castShadow = true;
             card.receiveShadow = true;
             
-            // Create canvas texture for card face
-            const canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 384;
-            const ctx = canvas.getContext('2d');
+            if (faceUp) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 384;
+                const ctx = canvas.getContext('2d');
+                
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
+                
+                ctx.font = 'bold 60px Arial';
+                ctx.fillStyle = suit === '♥' || suit === '♦' ? 'red' : 'black';
+                ctx.fillText(rank, 20, 80);
+                ctx.font = '40px Arial';
+                ctx.fillText(suit, 20, 130);
+                
+                ctx.font = 'bold 100px Arial';
+                ctx.fillText(rank, 80, 250);
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                const cardFaceMaterial = new THREE.MeshStandardMaterial({
+                    map: texture,
+                    roughness: 0.3,
+                    metalness: 0.2
+                });
+                card.material = cardFaceMaterial;
+            } else {
+                const backMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x4b3a6b,
+                    roughness: 0.4,
+                    metalness: 0.2
+                });
+                card.material = backMaterial;
+            }
             
-            // White background
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Border
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
-            
-            // Rank and suit
-            ctx.font = 'bold 60px Arial';
-            ctx.fillStyle = suit === '♥' || suit === '♦' ? 'red' : 'black';
-            ctx.fillText(rank, 20, 80);
-            ctx.font = '40px Arial';
-            ctx.fillText(suit, 20, 130);
-            
-            // Center design
-            ctx.font = 'bold 100px Arial';
-            ctx.fillText(rank, 80, 250);
-            
-            const texture = new THREE.CanvasTexture(canvas);
-            const cardFaceMaterial = new THREE.MeshStandardMaterial({
-                map: texture,
-                roughness: 0.3,
-                metalness: 0.2
-            });
-            
-            card.material = cardFaceMaterial;
             card.position.copy(position);
-            card.castShadow = true;
-            
             group.add(card);
             gameState.scene.add(group);
-            gameState.cards.push(group);
+            gameState.cardObjects.push(group);
             
             return group;
-        }
-
-        function createChip(value, position) {
-            const geometry = new THREE.CylinderGeometry(0.3, 0.3, 0.05, 32);
-            const color = value === 100 ? 0xff0000 : value === 50 ? 0x1a1aff : 0x00ff00;
-            const material = new THREE.MeshStandardMaterial({
-                color: color,
-                roughness: 0.4,
-                metalness: 0.6
-            });
-            const chip = new THREE.Mesh(geometry, material);
-            chip.position.copy(position);
-            chip.castShadow = true;
-            chip.receiveShadow = true;
-            
-            gameState.scene.add(chip);
-            gameState.chips.push(chip);
-            
-            return chip;
         }
 
         function animate() {
             requestAnimationFrame(animate);
             
-            // Rotate cards slightly
-            gameState.cards.forEach((card, index) => {
+            gameState.cardObjects.forEach((card, index) => {
                 card.rotation.z = Math.sin(Date.now() * 0.001 + index) * 0.05;
-            });
-            
-            // Animate chips
-            gameState.chips.forEach((chip, index) => {
-                chip.rotation.z += 0.02;
             });
             
             gameState.renderer.render(gameState.scene, gameState.camera);
@@ -539,107 +490,366 @@
             gameState.renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        // Game functions
+        // Hand Evaluation
+        function rankToValue(rank) {
+            const values = { '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14 };
+            return values[rank] || 0;
+        }
+
+        function evaluateHand(hand) {
+            if (!hand || hand.length < 5) return 'High Card';
+            
+            const ranks = hand.map(c => rankToValue(c.slice(0, -1)));
+            const suits = hand.map(c => c.slice(-1));
+            
+            ranks.sort((a, b) => b - a);
+            const rankCounts = {};
+            const suitCounts = {};
+            
+            ranks.forEach(r => rankCounts[r] = (rankCounts[r] || 0) + 1);
+            suits.forEach(s => suitCounts[s] = (suitCounts[s] || 0) + 1);
+            
+            const counts = Object.values(rankCounts).sort((a, b) => b - a);
+            const isFlush = Object.values(suitCounts).some(c => c >= 5);
+            
+            const uniqueRanks = Object.keys(rankCounts).map(Number).sort((a, b) => b - a);
+            let isStraight = false;
+            if (uniqueRanks.length >= 5) {
+                for (let i = 0; i <= uniqueRanks.length - 5; i++) {
+                    if (uniqueRanks[i] - uniqueRanks[i + 4] === 4) {
+                        isStraight = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (counts[0] === 4) return 'Four of a Kind';
+            if (counts[0] === 3 && counts[1] === 2) return 'Full House';
+            if (isFlush) return 'Flush';
+            if (isStraight) return 'Straight';
+            if (counts[0] === 3) return 'Three of a Kind';
+            if (counts[0] === 2 && counts[1] === 2) return 'Two Pair';
+            if (counts[0] === 2) return 'Pair';
+            return 'High Card';
+        }
+
+        function getHandStrength(hand) {
+            const types = {
+                'Four of a Kind': 8,
+                'Full House': 7,
+                'Flush': 6,
+                'Straight': 5,
+                'Three of a Kind': 4,
+                'Two Pair': 3,
+                'Pair': 2,
+                'High Card': 1
+            };
+            return types[evaluateHand(hand)] || 0;
+        }
+
+        // Game Functions
         function startGame() {
-            const bet = parseInt(document.getElementById('betInput').value);
-            if (bet < 10 || bet > gameState.balance) {
-                alert('Invalid bet amount!');
-                return;
-            }
-            
-            gameState.currentBet = bet;
-            gameState.balance -= bet;
-            gameState.pot = bet * 2;
-            gameState.gameActive = true;
-            
             document.getElementById('startModal').classList.remove('active');
-            document.getElementById('balance').textContent = '$' + gameState.balance;
-            document.getElementById('pot').textContent = '$' + gameState.pot;
             
-            // Create cards
-            gameState.cards.forEach(card => gameState.scene.remove(card));
-            gameState.chips.forEach(chip => gameState.scene.remove(chip));
-            gameState.cards = [];
-            gameState.chips = [];
+            gameState.pot = 0;
+            gameState.playerBet = 0;
+            gameState.dealerBet = 0;
+            gameState.currentBet = 0;
+            gameState.playerCards = [];
+            gameState.dealerCards = [];
+            gameState.communityCards = [];
+            gameState.cardObjects = [];
+            gameState.gamePhase = 'preflop';
+            gameState.gameActive = true;
+            gameState.handsPlayed++;
             
-            createCard('A', '♠', new THREE.Vector3(-1.5, 0, 1));
-            createCard('K', '♥', new THREE.Vector3(-0.5, 0, 1));
-            createCard('Q', '♦', new THREE.Vector3(0.5, 0, 1));
-            createCard('J', '♣', new THREE.Vector3(1.5, 0, 1));
+            // Create deck and shuffle
+            const suits = ['♠', '♥', '♦', '♣'];
+            const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+            const deck = [];
             
-            // Create chips
-            createChip(gameState.currentBet, new THREE.Vector3(-2, -2, 0.5));
-            createChip(gameState.currentBet, new THREE.Vector3(2, -2, 0.5));
+            for (let suit of suits) {
+                for (let rank of ranks) {
+                    deck.push(rank + suit);
+                }
+            }
             
+            deck.sort(() => Math.random() - 0.5);
+            
+            // Deal 2 cards to each
+            gameState.playerCards = [deck.pop(), deck.pop()];
+            gameState.dealerCards = [deck.pop(), deck.pop()];
+            
+            // Blinds
+            const smallBlind = 10;
+            const bigBlind = 20;
+            gameState.playerBalance -= smallBlind;
+            gameState.dealerBalance -= bigBlind;
+            gameState.pot = smallBlind + bigBlind;
+            gameState.playerBet = smallBlind;
+            gameState.dealerBet = bigBlind;
+            gameState.currentBet = bigBlind;
+            
+            renderGame();
+            updateDisplay();
             document.getElementById('gameInfo').style.display = 'block';
-            document.getElementById('gameInfo').textContent = '🎴 Game Started! Community cards displayed...';
+            document.getElementById('gameInfo').textContent = '🎴 Preflop - Your turn to act!';
+            showPlayerActions();
         }
 
-        function placeBet() {
-            if (!gameState.gameActive) {
-                document.getElementById('startModal').classList.add('active');
-                return;
-            }
-            alert('Bet already placed! Use other actions.');
-        }
-
-        function hitCard() {
-            if (gameState.gameActive) {
-                createCard('10', '♠', new THREE.Vector3(Math.random() * 2 - 1, 1.5, 1));
-                document.getElementById('gameInfo').textContent = '🎴 You hit! New card drawn...';
-            }
-        }
-
-        function stand() {
-            if (gameState.gameActive) {
-                gameState.gameActive = false;
-                document.getElementById('gameInfo').textContent = '🎴 Dealer playing their hand...';
-                setTimeout(endGame, 2000);
-            }
-        }
-
-        function fold() {
-            if (gameState.gameActive) {
-                gameState.gameActive = false;
-                document.getElementById('gameInfo').textContent = '❌ You folded! Dealer wins the pot.';
-                setTimeout(endGame, 2000);
-            }
-        }
-
-        function endGame() {
-            const won = Math.random() > 0.5;
-            const winAmount = gameState.pot * (won ? 1.5 : 0);
-            gameState.balance += winAmount;
-            gameState.winnings += winAmount;
+        function renderGame() {
+            // Clear previous cards
+            gameState.cardObjects.forEach(card => gameState.scene.remove(card));
+            gameState.cardObjects = [];
             
-            document.getElementById('resultTitle').textContent = won ? '🎉 YOU WIN! 🎉' : '❌ YOU LOSE! ❌';
-            document.getElementById('resultText').textContent = `You ${won ? 'won' : 'lost'} $${Math.abs(winAmount)}!\nNew Balance: $${gameState.balance}`;
-            document.getElementById('gameOverModal').classList.add('active');
+            // Player cards (right side)
+            const playerX = -2.5;
+            gameState.playerCards.forEach((card, i) => {
+                const pos = new THREE.Vector3(playerX + i * 0.9, -1.5, 1);
+                createCard(card.slice(0, -1), card.slice(-1), pos, true);
+            });
             
-            document.getElementById('balance').textContent = '$' + gameState.balance;
-            document.getElementById('winnings').textContent = '$' + gameState.winnings;
+            // Dealer cards (left side, one hidden)
+            const dealerX = 2.5;
+            createCard('?', '?', new THREE.Vector3(dealerX, 1.5, 1), false);
+            if (gameState.gamePhase === 'showdown') {
+                const card = gameState.dealerCards[1];
+                createCard(card.slice(0, -1), card.slice(-1), new THREE.Vector3(dealerX + 0.9, 1.5, 1), true);
+            } else {
+                createCard(gameState.dealerCards[1].slice(0, -1), gameState.dealerCards[1].slice(-1), new THREE.Vector3(dealerX + 0.9, 1.5, 1), true);
+            }
+            
+            // Community cards (center)
+            if (gameState.communityCards.length > 0) {
+                const startX = -(gameState.communityCards.length - 1) * 0.45;
+                gameState.communityCards.forEach((card, i) => {
+                    const pos = new THREE.Vector3(startX + i * 0.9, 0, 1);
+                    createCard(card.slice(0, -1), card.slice(-1), pos, true);
+                });
+            }
+        }
+
+        function showPlayerActions() {
+            document.getElementById('checkBtn').style.display = 'none';
+            document.getElementById('callBtn').style.display = 'none';
+            document.getElementById('raiseBtn').style.display = 'none';
+            document.getElementById('allInBtn').style.display = 'none';
+            document.getElementById('foldBtn').style.display = 'none';
+            document.getElementById('newGameBtn').style.display = 'none';
+            
+            const toCall = gameState.currentBet - gameState.playerBet;
+            
+            if (toCall === 0) {
+                document.getElementById('checkBtn').style.display = 'inline-block';
+            }
+            
+            if (toCall > 0) {
+                if (toCall <= gameState.playerBalance) {
+                    document.getElementById('callBtn').style.display = 'inline-block';
+                    document.getElementById('callBtn').textContent = `CALL $${toCall}`;
+                }
+                if (gameState.playerBalance > 0) {
+                    document.getElementById('allInBtn').style.display = 'inline-block';
+                }
+            }
+            
+            if (gameState.playerBalance > 0) {
+                document.getElementById('raiseBtn').style.display = 'inline-block';
+                document.getElementById('foldBtn').style.display = 'inline-block';
+            }
+        }
+
+        function hidePlayerActions() {
+            document.getElementById('checkBtn').style.display = 'none';
+            document.getElementById('callBtn').style.display = 'none';
+            document.getElementById('raiseBtn').style.display = 'none';
+            document.getElementById('allInBtn').style.display = 'none';
+            document.getElementById('foldBtn').style.display = 'none';
+        }
+
+        function playerCheck() {
+            hidePlayerActions();
+            document.getElementById('gameInfo').textContent = 'Dealer acting...';
+            setTimeout(() => nextPhaseOrShowdown(), 1500);
+        }
+
+        function playerCall() {
+            const toCall = gameState.currentBet - gameState.playerBet;
+            gameState.playerBalance -= toCall;
+            gameState.playerBet = gameState.currentBet;
+            gameState.pot += toCall;
+            
+            hidePlayerActions();
+            updateDisplay();
+            document.getElementById('gameInfo').textContent = 'Dealer acting...';
+            setTimeout(() => dealerAction(), 1500);
+        }
+
+        function playerRaise() {
+            const raiseAmount = 50;
+            const toCall = gameState.currentBet - gameState.playerBet;
+            const totalBet = toCall + raiseAmount;
+            
+            if (gameState.playerBalance >= totalBet) {
+                gameState.playerBalance -= totalBet;
+                gameState.playerBet += totalBet;
+                gameState.pot += totalBet;
+                gameState.currentBet = gameState.playerBet;
+                
+                hidePlayerActions();
+                updateDisplay();
+                document.getElementById('gameInfo').textContent = `You raised to $${gameState.playerBet}!`;
+                setTimeout(() => dealerAction(), 1500);
+            }
+        }
+
+        function playerAllIn() {
+            const remaining = gameState.playerBalance;
+            gameState.pot += remaining;
+            gameState.playerBalance = 0;
+            gameState.playerBet += remaining;
+            
+            hidePlayerActions();
+            updateDisplay();
+            document.getElementById('gameInfo').textContent = `You went all in! Dealer actions...`;
+            setTimeout(() => nextPhaseOrShowdown(), 1500);
+        }
+
+        function playerFold() {
+            hidePlayerActions();
+            document.getElementById('gameInfo').textContent = 'You folded!';
+            gameState.dealerBalance += gameState.pot;
+            setTimeout(() => showResult('Dealer wins!', 'You folded.'), 1500);
+        }
+
+        function dealerAction() {
+            const dealerCards = gameState.dealerCards.concat(gameState.communityCards);
+            const strength = getHandStrength(dealerCards);
+            const toCall = gameState.currentBet - gameState.dealerBet;
+            
+            if (toCall === 0 || strength >= 5) {
+                document.getElementById('gameInfo').textContent = 'Dealer calling...';
+                gameState.dealerBet = gameState.currentBet;
+                if (toCall > 0) gameState.pot += toCall;
+                gameState.dealerBalance -= toCall;
+                setTimeout(() => nextPhaseOrShowdown(), 1500);
+            } else {
+                document.getElementById('gameInfo').textContent = 'Dealer folding...';
+                gameState.playerBalance += gameState.pot;
+                gameState.wins++;
+                setTimeout(() => showResult('You win!', 'Dealer folded.'), 1500);
+            }
+        }
+
+        function nextPhaseOrShowdown() {
+            switch (gameState.gamePhase) {
+                case 'preflop':
+                    gameState.communityCards = [drawRandomCard(), drawRandomCard(), drawRandomCard()];
+                    gameState.gamePhase = 'flop';
+                    gameState.currentBet = 0;
+                    gameState.playerBet = 0;
+                    gameState.dealerBet = 0;
+                    renderGame();
+                    document.getElementById('gameInfo').textContent = 'Flop dealt! Your turn.';
+                    showPlayerActions();
+                    break;
+                case 'flop':
+                    gameState.communityCards.push(drawRandomCard());
+                    gameState.gamePhase = 'turn';
+                    gameState.currentBet = 0;
+                    gameState.playerBet = 0;
+                    gameState.dealerBet = 0;
+                    renderGame();
+                    document.getElementById('gameInfo').textContent = 'Turn dealt! Your turn.';
+                    showPlayerActions();
+                    break;
+                case 'turn':
+                    gameState.communityCards.push(drawRandomCard());
+                    gameState.gamePhase = 'river';
+                    gameState.currentBet = 0;
+                    gameState.playerBet = 0;
+                    gameState.dealerBet = 0;
+                    renderGame();
+                    document.getElementById('gameInfo').textContent = 'River dealt! Your turn.';
+                    showPlayerActions();
+                    break;
+                case 'river':
+                    showdown();
+                    break;
+            }
+            updateDisplay();
+        }
+
+        function drawRandomCard() {
+            const suits = ['♠', '♥', '♦', '♣'];
+            const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+            return ranks[Math.floor(Math.random() * ranks.length)] + suits[Math.floor(Math.random() * suits.length)];
+        }
+
+        function showdown() {
+            gameState.gamePhase = 'showdown';
+            renderGame();
+            
+            const playerAllCards = gameState.playerCards.concat(gameState.communityCards);
+            const dealerAllCards = gameState.dealerCards.concat(gameState.communityCards);
+            
+            const playerStrength = getHandStrength(playerAllCards);
+            const dealerStrength = getHandStrength(dealerAllCards);
+            
+            const playerHand = evaluateHand(playerAllCards);
+            const dealerHand = evaluateHand(dealerAllCards);
+            
+            hidePlayerActions();
+            
+            if (playerStrength > dealerStrength) {
+                gameState.playerBalance += gameState.pot;
+                gameState.wins++;
+                showResult('🎉 YOU WIN!', `Your: ${playerHand}\nDealer: ${dealerHand}`, playerHand);
+            } else if (dealerStrength > playerStrength) {
+                gameState.dealerBalance += gameState.pot;
+                showResult('❌ YOU LOSE!', `Your: ${playerHand}\nDealer: ${dealerHand}`, playerHand);
+            } else {
+                gameState.playerBalance += gameState.pot / 2;
+                gameState.dealerBalance += gameState.pot / 2;
+                showResult('🤝 SPLIT POT!', `Your: ${playerHand}\nDealer: ${dealerHand}`, playerHand);
+            }
+        }
+
+        function showResult(title, message, hand) {
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultText').textContent = message;
+            document.getElementById('resultHand').textContent = hand || '';
+            document.getElementById('resultModal').classList.add('active');
+            updateDisplay();
+        }
+
+        function continueGame() {
+            document.getElementById('resultModal').classList.remove('active');
+            if (gameState.playerBalance > 0) {
+                startGame();
+            } else {
+                document.getElementById('resultTitle').textContent = '💸 GAME OVER 💸';
+                document.getElementById('resultText').textContent = 'Out of chips! Returning...';
+                setTimeout(() => goBack(), 2000);
+            }
+        }
+
+        function updateDisplay() {
+            document.getElementById('balance').textContent = '$' + gameState.playerBalance.toLocaleString();
+            document.getElementById('pot').textContent = '$' + gameState.pot.toLocaleString();
         }
 
         function newGame() {
-            document.getElementById('gameOverModal').classList.remove('active');
-            if (gameState.balance > 0) {
-                document.getElementById('betInput').value = Math.min(50, gameState.balance);
-                document.getElementById('startModal').classList.add('active');
-            } else {
-                document.getElementById('resultTitle').textContent = '💸 GAME OVER 💸';
-                document.getElementById('resultText').textContent = 'You are out of money! Returning to casino...';
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 3000);
-            }
+            document.getElementById('resultModal').classList.remove('active');
+            startGame();
         }
 
         function goBack() {
-            window.location.href = 'holdem.html';
+            window.location.href = 'index.html';
         }
 
-        // Initialize on load
-        window.addEventListener('load', () => {
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
             initThreeJS();
             document.getElementById('startModal').classList.add('active');
         });

@@ -103,46 +103,89 @@ function renderCards() {
     document.getElementById('communityCards').innerHTML = communityHTML;
 }
 
-// Hand evaluation (simplified)
-function evaluateHand(cards) {
-    if (!cards || cards.length < 5) return 'Incomplete';
+// Proper hand evaluation with best 5-card selection from 7
+function rankToValue(rank) {
+    const values = { '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14 };
+    return values[rank] || 0;
+}
+
+function generateCombinations(arr) {
+    if (arr.length === 5) return [arr];
+    if (arr.length < 5) return [];
     
-    // Count ranks and suits
-    const ranks = cards.map(c => c.slice(0, -1));
+    const combos = [];
+    for (let i = 0; i < arr.length; i++) {
+        const rest = generateCombinations([...arr.slice(0, i), ...arr.slice(i + 1)]);
+        combos.push(...rest);
+    }
+    return combos;
+}
+
+function evaluateHandStrength(hand) {
+    const ranks = hand.map(c => rankToValue(c.slice(0, -1)));
+    const suits = hand.map(c => c.slice(-1));
+    
+    ranks.sort((a, b) => b - a);
     const rankCounts = {};
-    ranks.forEach(r => rankCounts[r] = (rankCounts[r] || 0) + 1);
-    
-    const sortedCounts = Object.values(rankCounts).sort((a, b) => b - a);
-    
-    // Flush
-    const suits = cards.map(c => c.slice(-1));
     const suitCounts = {};
+    
+    ranks.forEach(r => rankCounts[r] = (rankCounts[r] || 0) + 1);
     suits.forEach(s => suitCounts[s] = (suitCounts[s] || 0) + 1);
     
-    const hasFlush = Object.values(suitCounts).some(c => c >= 5);
+    const counts = Object.values(rankCounts).sort((a, b) => b - a);
+    const isFlush = Object.values(suitCounts).some(c => c >= 5);
     
-    // Determine hand type
-    if (sortedCounts[0] === 4) return 'Four of a Kind';
-    if (sortedCounts[0] === 3 && sortedCounts[1] === 2) return 'Full House';
-    if (hasFlush) return 'Flush';
-    if (sortedCounts[0] === 3) return 'Three of a Kind';
-    if (sortedCounts[0] === 2 && sortedCounts[1] === 2) return 'Two Pair';
-    if (sortedCounts[0] === 2) return 'One Pair';
-    return 'High Card';
+    // Check for straight
+    const uniqueRanks = Object.keys(rankCounts).map(Number).sort((a, b) => b - a);
+    let isStraight = false;
+    if (uniqueRanks.length >= 5) {
+        for (let i = 0; i <= uniqueRanks.length - 5; i++) {
+            if (uniqueRanks[i] - uniqueRanks[i + 4] === 4) {
+                isStraight = true;
+                break;
+            }
+        }
+        // Check for A-2-3-4-5 straight
+        if (uniqueRanks[0] === 14 && uniqueRanks[uniqueRanks.length - 1] === 2 && uniqueRanks.includes(3) && uniqueRanks.includes(4) && uniqueRanks.includes(5)) {
+            isStraight = true;
+        }
+    }
+    
+    // Determine hand type and strength
+    if (counts[0] === 4) return { name: 'Four of a Kind', strength: 8, highCards: ranks };
+    if (counts[0] === 3 && counts[1] === 2) return { name: 'Full House', strength: 7, highCards: ranks };
+    if (isFlush) return { name: 'Flush', strength: 6, highCards: ranks };
+    if (isStraight) return { name: 'Straight', strength: 5, highCards: ranks };
+    if (counts[0] === 3) return { name: 'Three of a Kind', strength: 4, highCards: ranks };
+    if (counts[0] === 2 && counts[1] === 2) return { name: 'Two Pair', strength: 3, highCards: ranks };
+    if (counts[0] === 2) return { name: 'Pair', strength: 2, highCards: ranks };
+    return { name: 'High Card', strength: 1, highCards: ranks };
+}
+
+function getBestHand(cards) {
+    if (cards.length < 5) return { name: 'Incomplete', strength: 0, highCards: [] };
+    if (cards.length === 5) return evaluateHandStrength(cards);
+    
+    const allCombos = generateCombinations(cards);
+    let bestHand = { strength: 0, name: 'High Card', hand: [] };
+    
+    for (let combo of allCombos) {
+        const hand = evaluateHandStrength(combo);
+        if (hand.strength > bestHand.strength || 
+            (hand.strength === bestHand.strength && hand.highCards[0] > (bestHand.highCards ? bestHand.highCards[0] : 0))) {
+            bestHand = { ...hand, hand: combo };
+        }
+    }
+    
+    return bestHand;
+}
+
+function evaluateHand(cards) {
+    return getBestHand(cards).name;
 }
 
 function getHandStrength(cards) {
-    const hand = evaluateHand(cards);
-    const strengths = {
-        'Four of a Kind': 7,
-        'Full House': 6,
-        'Flush': 5,
-        'Three of a Kind': 4,
-        'Two Pair': 3,
-        'One Pair': 2,
-        'High Card': 1
-    };
-    return strengths[hand] || 0;
+    return getBestHand(cards).strength;
 }
 
 // Game phases
