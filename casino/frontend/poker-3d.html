@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Texas Hold'em 3D - Realistic Poker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .hud-top {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 40px;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            text-transform: uppercase;
+            z-index: 10;
+            position: relative;
+        }
+
+        .hud-title {
+            text-align: center;
+            flex: 1;
+            color: #ff00ff;
+            text-shadow: 0 0 20px #ff00ff;
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+
+        .hud-stats {
+            display: flex;
+            gap: 40px;
+        }
+
+        .stat-box {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            padding: 10px 20px;
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #00ff00;
+            opacity: 0.7;
+        }
+
+        .stat-value {
+            font-size: 14px;
+            color: #00ffff;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ffff;
+            margin-top: 5px;
+        }
+
+        .hud-bottom {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 10;
+            pointer-events: all;
+        }
+
+        button {
+            background: linear-gradient(135deg, #ff00ff, #ff0080);
+            color: white;
+            border: 2px solid #ff00ff;
+            padding: 12px 25px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 11px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.6);
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 40px rgba(255, 0, 255, 1);
+            background: linear-gradient(135deg, #ff0080, #ff00ff);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .game-info {
+            position: absolute;
+            bottom: 130px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            padding: 15px 30px;
+            border-radius: 8px;
+            color: #00ffff;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            text-shadow: 0 0 10px #00ffff;
+            text-align: center;
+            z-index: 10;
+            max-width: 600px;
+        }
+
+        .player-info {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            color: #00ff00;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            text-shadow: 0 0 10px #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        .player-info.active {
+            border-color: #ff00ff;
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.8);
+        }
+
+        .dealer-badge {
+            position: absolute;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #000;
+            padding: 8px 15px;
+            border-radius: 50%;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 11;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 3px solid #ff00ff;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(255, 0, 255, 0.8);
+        }
+
+        .modal-content h2 {
+            color: #ff00ff;
+            font-family: 'Press Start 2P', cursive;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #ff00ff;
+            font-size: 24px;
+        }
+
+        .modal-content p {
+            color: #00ffff;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(100, 50, 150, 0.5);
+            color: #c0b0e0;
+            border: 2px solid #6a4c93;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            z-index: 10;
+            pointer-events: all;
+        }
+
+        .back-btn:hover {
+            background: #6a4c93;
+            box-shadow: 0 0 15px rgba(100, 50, 150, 0.8);
+        }
+
+        @media (max-width: 1024px) {
+            .hud-top {
+                flex-direction: column;
+                gap: 10px;
+                font-size: 10px;
+            }
+
+            .hud-stats {
+                flex-direction: column;
+                gap: 10px;
+                align-items: center;
+            }
+
+            .stat-box {
+                padding: 8px 15px;
+            }
+
+            .stat-value {
+                font-size: 12px;
+            }
+
+            button {
+                padding: 10px 15px;
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    
+    <div class="ui-overlay">
+        <div class="hud-top">
+            <div class="hud-title">🃏 TEXAS HOLD'EM 3D 🃏</div>
+            <div class="hud-stats">
+                <div class="stat-box">
+                    <div class="stat-label">Balance</div>
+                    <div class="stat-value" id="balance">$1000</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Pot</div>
+                    <div class="stat-value" id="pot">$0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Winnings</div>
+                    <div class="stat-value" id="winnings">$0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-info" id="gameInfo" style="display: none;"></div>
+
+        <div class="hud-bottom">
+            <button id="betBtn" onclick="placeBet()">PLACE BET</button>
+            <button id="hitBtn" onclick="hitCard()">HIT</button>
+            <button id="standBtn" onclick="stand()">STAND</button>
+            <button id="foldBtn" onclick="fold()">FOLD</button>
+            <button id="newGameBtn" onclick="newGame()">NEW GAME</button>
+        </div>
+
+        <button class="back-btn" onclick="goBack()">← BACK</button>
+    </div>
+
+    <div class="modal" id="startModal">
+        <div class="modal-content">
+            <h2>🎰 WELCOME 🎰</h2>
+            <p>Enter your starting bet:</p>
+            <input id="betInput" type="number" min="10" max="500" value="50" 
+                   style="background: #1a1a2e; border: 2px solid #00ff00; color: #00ff00; padding: 10px; 
+                          font-family: 'Press Start 2P'; font-size: 12px; text-align: center; margin-bottom: 20px;
+                          border-radius: 4px; width: 200px;">
+            <div class="modal-buttons">
+                <button onclick="startGame()">START GAME</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="gameOverModal">
+        <div class="modal-content">
+            <h2 id="resultTitle">GAME OVER</h2>
+            <p id="resultText">You Lost!</p>
+            <div class="modal-buttons">
+                <button onclick="newGame()">PLAY AGAIN</button>
+                <button onclick="goBack()">EXIT</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            balance: 1000,
+            currentBet: 0,
+            pot: 0,
+            winnings: 0,
+            gameActive: false,
+            scene: null,
+            camera: null,
+            renderer: null,
+            cards: [],
+            chips: []
+        };
+
+        // Initialize Three.js scene
+        function initThreeJS() {
+            const container = document.getElementById('canvas-container');
+            
+            gameState.scene = new THREE.Scene();
+            gameState.scene.background = new THREE.Color(0x0a4e2e);
+            
+            gameState.camera = new THREE.PerspectiveCamera(
+                75,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            gameState.camera.position.z = 5;
+            
+            gameState.renderer = new THREE.WebGLRenderer({ antialias: true });
+            gameState.renderer.setSize(window.innerWidth, window.innerHeight);
+            gameState.renderer.shadowMap.enabled = true;
+            container.appendChild(gameState.renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            gameState.scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 5, 7);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            gameState.scene.add(directionalLight);
+
+            const pointLight = new THREE.PointLight(0xff00ff, 0.5);
+            pointLight.position.set(-5, 3, 3);
+            gameState.scene.add(pointLight);
+
+            // Create felt table
+            createFeltTable();
+            
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+            
+            // Start animation loop
+            animate();
+        }
+
+        function createFeltTable() {
+            const geometry = new THREE.EllipseGeometry(6, 4, 32);
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x0a4e2e,
+                roughness: 0.8,
+                metalness: 0.1
+            });
+            const table = new THREE.Mesh(geometry, material);
+            table.receiveShadow = true;
+            gameState.scene.add(table);
+
+            // Table edge highlight
+            const edgeGeometry = new THREE.TorusGeometry(6, 0.1, 16, 32);
+            const edgeMaterial = new THREE.MeshStandardMaterial({
+                color: 0xd4af37,
+                roughness: 0.3,
+                metalness: 0.8
+            });
+            const edge = new THREE.Mesh(edgeGeometry, edgeMaterial);
+            edge.position.z = 0.01;
+            edge.castShadow = true;
+            gameState.scene.add(edge);
+        }
+
+        function createCard(rank, suit, position) {
+            const group = new THREE.Group();
+            
+            // Card body
+            const cardGeometry = new THREE.BoxGeometry(0.7, 1, 0.05);
+            const cardMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                roughness: 0.2,
+                metalness: 0.3
+            });
+            const card = new THREE.Mesh(cardGeometry, cardMaterial);
+            card.castShadow = true;
+            card.receiveShadow = true;
+            
+            // Create canvas texture for card face
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 384;
+            const ctx = canvas.getContext('2d');
+            
+            // White background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Border
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
+            
+            // Rank and suit
+            ctx.font = 'bold 60px Arial';
+            ctx.fillStyle = suit === '♥' || suit === '♦' ? 'red' : 'black';
+            ctx.fillText(rank, 20, 80);
+            ctx.font = '40px Arial';
+            ctx.fillText(suit, 20, 130);
+            
+            // Center design
+            ctx.font = 'bold 100px Arial';
+            ctx.fillText(rank, 80, 250);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const cardFaceMaterial = new THREE.MeshStandardMaterial({
+                map: texture,
+                roughness: 0.3,
+                metalness: 0.2
+            });
+            
+            card.material = cardFaceMaterial;
+            card.position.copy(position);
+            card.castShadow = true;
+            
+            group.add(card);
+            gameState.scene.add(group);
+            gameState.cards.push(group);
+            
+            return group;
+        }
+
+        function createChip(value, position) {
+            const geometry = new THREE.CylinderGeometry(0.3, 0.3, 0.05, 32);
+            const color = value === 100 ? 0xff0000 : value === 50 ? 0x1a1aff : 0x00ff00;
+            const material = new THREE.MeshStandardMaterial({
+                color: color,
+                roughness: 0.4,
+                metalness: 0.6
+            });
+            const chip = new THREE.Mesh(geometry, material);
+            chip.position.copy(position);
+            chip.castShadow = true;
+            chip.receiveShadow = true;
+            
+            gameState.scene.add(chip);
+            gameState.chips.push(chip);
+            
+            return chip;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotate cards slightly
+            gameState.cards.forEach((card, index) => {
+                card.rotation.z = Math.sin(Date.now() * 0.001 + index) * 0.05;
+            });
+            
+            // Animate chips
+            gameState.chips.forEach((chip, index) => {
+                chip.rotation.z += 0.02;
+            });
+            
+            gameState.renderer.render(gameState.scene, gameState.camera);
+        }
+
+        function onWindowResize() {
+            gameState.camera.aspect = window.innerWidth / window.innerHeight;
+            gameState.camera.updateProjectionMatrix();
+            gameState.renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Game functions
+        function startGame() {
+            const bet = parseInt(document.getElementById('betInput').value);
+            if (bet < 10 || bet > gameState.balance) {
+                alert('Invalid bet amount!');
+                return;
+            }
+            
+            gameState.currentBet = bet;
+            gameState.balance -= bet;
+            gameState.pot = bet * 2;
+            gameState.gameActive = true;
+            
+            document.getElementById('startModal').classList.remove('active');
+            document.getElementById('balance').textContent = '$' + gameState.balance;
+            document.getElementById('pot').textContent = '$' + gameState.pot;
+            
+            // Create cards
+            gameState.cards.forEach(card => gameState.scene.remove(card));
+            gameState.chips.forEach(chip => gameState.scene.remove(chip));
+            gameState.cards = [];
+            gameState.chips = [];
+            
+            createCard('A', '♠', new THREE.Vector3(-1.5, 0, 1));
+            createCard('K', '♥', new THREE.Vector3(-0.5, 0, 1));
+            createCard('Q', '♦', new THREE.Vector3(0.5, 0, 1));
+            createCard('J', '♣', new THREE.Vector3(1.5, 0, 1));
+            
+            // Create chips
+            createChip(gameState.currentBet, new THREE.Vector3(-2, -2, 0.5));
+            createChip(gameState.currentBet, new THREE.Vector3(2, -2, 0.5));
+            
+            document.getElementById('gameInfo').style.display = 'block';
+            document.getElementById('gameInfo').textContent = '🎴 Game Started! Community cards displayed...';
+        }
+
+        function placeBet() {
+            if (!gameState.gameActive) {
+                document.getElementById('startModal').classList.add('active');
+                return;
+            }
+            alert('Bet already placed! Use other actions.');
+        }
+
+        function hitCard() {
+            if (gameState.gameActive) {
+                createCard('10', '♠', new THREE.Vector3(Math.random() * 2 - 1, 1.5, 1));
+                document.getElementById('gameInfo').textContent = '🎴 You hit! New card drawn...';
+            }
+        }
+
+        function stand() {
+            if (gameState.gameActive) {
+                gameState.gameActive = false;
+                document.getElementById('gameInfo').textContent = '🎴 Dealer playing their hand...';
+                setTimeout(endGame, 2000);
+            }
+        }
+
+        function fold() {
+            if (gameState.gameActive) {
+                gameState.gameActive = false;
+                document.getElementById('gameInfo').textContent = '❌ You folded! Dealer wins the pot.';
+                setTimeout(endGame, 2000);
+            }
+        }
+
+        function endGame() {
+            const won = Math.random() > 0.5;
+            const winAmount = gameState.pot * (won ? 1.5 : 0);
+            gameState.balance += winAmount;
+            gameState.winnings += winAmount;
+            
+            document.getElementById('resultTitle').textContent = won ? '🎉 YOU WIN! 🎉' : '❌ YOU LOSE! ❌';
+            document.getElementById('resultText').textContent = `You ${won ? 'won' : 'lost'} $${Math.abs(winAmount)}!\nNew Balance: $${gameState.balance}`;
+            document.getElementById('gameOverModal').classList.add('active');
+            
+            document.getElementById('balance').textContent = '$' + gameState.balance;
+            document.getElementById('winnings').textContent = '$' + gameState.winnings;
+        }
+
+        function newGame() {
+            document.getElementById('gameOverModal').classList.remove('active');
+            if (gameState.balance > 0) {
+                document.getElementById('betInput').value = Math.min(50, gameState.balance);
+                document.getElementById('startModal').classList.add('active');
+            } else {
+                document.getElementById('resultTitle').textContent = '💸 GAME OVER 💸';
+                document.getElementById('resultText').textContent = 'You are out of money! Returning to casino...';
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 3000);
+            }
+        }
+
+        function goBack() {
+            window.location.href = 'holdem.html';
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initThreeJS();
+            document.getElementById('startModal').classList.add('active');
+        });
+    </script>
+</body>
+</html>

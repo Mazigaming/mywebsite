@@ -82,7 +82,7 @@
 
         .modes-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 40px;
             margin-bottom: 40px;
         }
@@ -200,11 +200,11 @@
         </div>
 
         <div class="modes-grid">
-            <!-- Solo Mode -->
+            <!-- Solo 3D Mode -->
             <div class="mode-card" onclick="startSoloMode()">
                 <div class="mode-icon">🤖</div>
-                <div class="mode-title" data-i18n="soloTitle">SOLO</div>
-                <div class="mode-description" data-i18n="soloDesc">Play against AI dealer. Perfect for learning and practicing poker strategy.</div>
+                <div class="mode-title" data-i18n="solo3DTitle">SOLO 3D</div>
+                <div class="mode-description" data-i18n="solo3DDesc">Hyper-realistic 3D poker with WebGL cards. Play against AI with stunning graphics and animations.</div>
                 <button class="mode-btn" data-i18n="playBtn">PLAY</button>
             </div>
 
@@ -213,6 +213,14 @@
                 <div class="mode-icon">👥</div>
                 <div class="mode-title" data-i18n="multiTitle">WITH FRIENDS</div>
                 <div class="mode-description" data-i18n="multiDesc">Turn-based poker with friends. Pass the device and take turns. See your cards privately!</div>
+                <button class="mode-btn" data-i18n="playBtn">PLAY</button>
+            </div>
+
+            <!-- Classic Solo Mode -->
+            <div class="mode-card" onclick="startClassicMode()">
+                <div class="mode-icon">📱</div>
+                <div class="mode-title" data-i18n="classicTitle">CLASSIC</div>
+                <div class="mode-description" data-i18n="classicDesc">Original 2D poker game. Lightweight and fast. Perfect for quick games.</div>
                 <button class="mode-btn" data-i18n="playBtn">PLAY</button>
             </div>
         </div>
@@ -226,19 +234,23 @@
         const translations = {
             en: {
                 selectMode: 'SELECT YOUR PLAY MODE',
-                soloTitle: 'SOLO',
-                soloDesc: 'Play against AI dealer. Perfect for learning and practicing poker strategy.',
+                solo3DTitle: 'SOLO 3D',
+                solo3DDesc: 'Hyper-realistic 3D poker with WebGL cards. Play against AI with stunning graphics and animations.',
                 multiTitle: 'WITH FRIENDS',
                 multiDesc: 'Turn-based poker with friends. Pass the device and take turns. See your cards privately!',
+                classicTitle: 'CLASSIC',
+                classicDesc: 'Original 2D poker game. Lightweight and fast. Perfect for quick games.',
                 playBtn: 'PLAY',
                 backBtn: '← BACK'
             },
             pl: {
                 selectMode: 'WYBIERZ TRYB GRY',
-                soloTitle: 'SOLO',
-                soloDesc: 'Graj przeciwko sztucznej inteligencji. Doskonały do nauki i treningu strategii pokera.',
+                solo3DTitle: 'SOLO 3D',
+                solo3DDesc: 'Hiperrealistyczny poker 3D z kartami WebGL. Graj przeciwko AI ze wspaniałą grafiką i animacjami.',
                 multiTitle: 'Z PRZYJACIÓŁMI',
                 multiDesc: 'Turowa gra w pokera z przyjaciółmi. Przekaż urządzenie i czekajcie na siebie. Patrz na swoje karty prywatnie!',
+                classicTitle: 'KLASYKA',
+                classicDesc: 'Oryginalny poker 2D. Lekki i szybki. Idealne do szybkich gier.',
                 playBtn: 'GRAJ',
                 backBtn: '← WRÓĆ'
             }
@@ -268,13 +280,19 @@
         function startSoloMode() {
             localStorage.setItem('pokerMode', 'solo');
             localStorage.setItem('pokerLanguage', currentLanguage);
-            window.location.href = 'poker-offline.html';
+            window.location.href = 'poker-3d.html';
         }
 
         function startMultiplayerMode() {
             localStorage.setItem('pokerMode', 'multiplayer');
             localStorage.setItem('pokerLanguage', currentLanguage);
             window.location.href = 'poker-multiplayer.html';
+        }
+
+        function startClassicMode() {
+            localStorage.setItem('pokerMode', 'classic');
+            localStorage.setItem('pokerLanguage', currentLanguage);
+            window.location.href = 'poker-offline.html';
         }
 
         function goBack() {
